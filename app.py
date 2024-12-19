@@ -73,6 +73,10 @@ def predict():
         # Reorder columns to match the model's expected input
         input_data = input_data[model_columns]
 
+        # Debugging: Print input data
+        print("Input Data:")
+        print(input_data.head())
+
         # Predict
         prediction = model.predict(input_data)[0]
         return jsonify({"prediction": round(prediction, 2)})
