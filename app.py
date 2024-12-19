@@ -62,9 +62,15 @@ def predict():
 
         # Load model columns
         model_columns = joblib.load('model_columns.pkl')
-        for col in model_columns:
-            if col not in input_data.columns:
-                input_data[col] = 0
+
+        # Identify missing columns and add them with default values
+        missing_columns = [col for col in model_columns if col not in input_data.columns]
+        missing_df = pd.DataFrame(0, index=range(len(input_data)), columns=missing_columns)
+
+        # Concatenate the new columns to the input_data
+        input_data = pd.concat([input_data, missing_df], axis=1)
+
+        # Reorder columns to match the model's expected input
         input_data = input_data[model_columns]
 
         # Predict
