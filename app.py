@@ -6,6 +6,7 @@ from datetime import datetime
 from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app)  # Enable CORS for all routes
 
 # Load models and encodings
 rf_boardings = joblib.load('models/rf_boardings.pkl')
@@ -18,10 +19,10 @@ df = pd.read_csv('dataset/stop_10637_data.csv')
 @app.route('/')
 def home():
     # Extract unique options for dropdowns
-    schedule_periods = ['Summer 2025', 'Fall 2025', 'Spring 2025', 'Winter 2026']
-    route_numbers = df['route_number'].unique().tolist()
-    day_types = ['Weekday', 'Saturday', 'Sunday']
-    time_periods = ['Morning', 'Mid-Day', 'PM Peak', 'Evening', 'Night']
+    schedule_periods = ['', 'Summer 2025', 'Fall 2025', 'Spring 2025', 'Winter 2026']
+    route_numbers = [''] + df['route_number'].unique().tolist()
+    day_types = ['', 'Weekday', 'Saturday', 'Sunday']
+    time_periods = ['', 'Morning', 'Mid-Day', 'PM Peak', 'Evening', 'Night']
     
     return render_template(
         'index.html',
@@ -35,11 +36,16 @@ def home():
 def get_route_names():
     try:
         # Get selected route_number from the request
-        route_number = int(request.json['route_number'])
+        route_number = request.json['route_number']
         app.logger.info(f"Received request for route number: {route_number}")
         
+        # If route_number is empty, return an empty list
+        if not route_number:
+            return jsonify([''])
+        
         # Filter route names based on route_number
-        route_names = df[df['route_number'] == route_number]['route_name'].unique().tolist()
+        route_number = int(route_number)
+        route_names = [''] + df[df['route_number'] == route_number]['route_name'].unique().tolist()
         app.logger.info(f"Found route names: {route_names}")
         
         return jsonify(route_names)
@@ -88,10 +94,10 @@ def predict():
                 "boardings": boardings_prediction,
                 "alightings": alightings_prediction
             },
-            schedule_periods=['Summer 2025', 'Fall 2025', 'Spring 2025', 'Winter 2026'],
-            route_numbers=df['route_number'].unique().tolist(),
-            day_types=['Weekday', 'Saturday', 'Sunday'],
-            time_periods=['Morning', 'Mid-Day', 'PM Peak', 'Evening', 'Night']
+            schedule_periods=['', 'Summer 2025', 'Fall 2025', 'Spring 2025', 'Winter 2026'],
+            route_numbers=[''] + df['route_number'].unique().tolist(),
+            day_types=['', 'Weekday', 'Saturday', 'Sunday'],
+            time_periods=['', 'Morning', 'Mid-Day', 'PM Peak', 'Evening', 'Night']
         )
     except Exception as e:
         app.logger.error(f"Error in predict: {str(e)}")
