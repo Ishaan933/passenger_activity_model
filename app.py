@@ -11,7 +11,7 @@ rf_alightings = joblib.load('models/rf_alightings.pkl')
 encodings = joblib.load('models/encodings.pkl')
 
 # Load dataset
-df = pd.read_csv('/path/to/stop_10637_data.csv')
+df = pd.read_csv('dataset/stop_10637_data.csv')
 
 @app.route('/')
 def home():
