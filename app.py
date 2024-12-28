@@ -32,16 +32,23 @@ def home():
         time_periods=time_periods
     )
 
-@app.route('/get_route_names', methods=['POST'])
+@app.route('/get_route_names', methods=['GET', 'POST'])
 def get_route_names():
+    """
+    Get route names based on the selected route number.
+    """
     try:
-        # Get selected route_number from the request
-        route_number = request.json['route_number']
-        app.logger.info(f"Received request for route number: {route_number}")
+        # Handle GET request for debugging (optional)
+        if request.method == 'GET':
+            return "This endpoint is for retrieving route names. Use POST to send a route number.", 200
         
-        # If route_number is empty, return an empty list
+        # Handle POST request to fetch route names
+        route_number = request.json.get('route_number', None)
+        app.logger.info(f"Fetching route names for route number: {route_number}")
+        
+        # Handle empty or missing route_number
         if not route_number:
-            return jsonify([''])
+            return jsonify([''])  # Return an empty list for empty input
         
         # Filter route names based on route_number
         route_number = int(route_number)
