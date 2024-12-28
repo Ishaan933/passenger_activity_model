@@ -7,25 +7,39 @@
     <script>
         async function updateRouteNames() {
             const routeNumber = document.getElementById('route_number').value;
+            console.log('Selected route number:', routeNumber);
             
-            // Fetch route names from the server
-            const response = await fetch('/get_route_names', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ route_number: routeNumber })
-            });
-            const routeNames = await response.json();
+            try {
+                const response = await fetch('/get_route_names', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ route_number: routeNumber })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const routeNames = await response.json();
+                console.log('Received route names:', routeNames);
 
-            // Update the route_name dropdown
-            const routeNameDropdown = document.getElementById('route_name');
-            routeNameDropdown.innerHTML = ''; // Clear existing options
-            routeNames.forEach(name => {
-                const option = document.createElement('option');
-                option.value = name;
-                option.textContent = name;
-                routeNameDropdown.appendChild(option);
-            });
+                const routeNameDropdown = document.getElementById('route_name');
+                routeNameDropdown.innerHTML = ''; // Clear existing options
+                routeNames.forEach(name => {
+                    const option = document.createElement('option');
+                    option.value = name;
+                    option.textContent = name;
+                    routeNameDropdown.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Error updating route names:', error);
+            }
         }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const routeNumberDropdown = document.getElementById('route_number');
+            routeNumberDropdown.addEventListener('change', updateRouteNames);
+        });
     </script>
 </head>
 <body>
@@ -39,7 +53,7 @@
         </select><br>
 
         <label for="route_number">Route Number:</label>
-        <select id="route_number" name="route_number" required onchange="updateRouteNames()">
+        <select id="route_number" name="route_number" required>
             {% for number in route_numbers %}
                 <option value="{{ number }}">{{ number }}</option>
             {% endfor %}
