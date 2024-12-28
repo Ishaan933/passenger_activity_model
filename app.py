@@ -6,9 +6,9 @@ from datetime import datetime
 app = Flask(__name__)
 
 # Load models and encodings
-rf_boardings = joblib.load('models/rf_boardings_model.joblib')
-rf_alightings = joblib.load('models/rf_alightings_model.joblib')
-encodings = joblib.load('models/encodings.joblib')
+rf_boardings = joblib.load('models/rf_boardings.pkl')
+rf_alightings = joblib.load('models/rf_alightings.pkl')
+encodings = joblib.load('models/encodings.pkl')
 
 # Load dataset
 df = pd.read_csv('/path/to/stop_10637_data.csv')
