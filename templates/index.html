@@ -3,37 +3,53 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Transit Prediction</title>
+    <title>Transit Prediction Model</title>
 </head>
 <body>
     <h1>Transit Prediction Model</h1>
     <form action="/predict" method="POST">
         <label for="schedule_period_name">Schedule Period Name:</label>
-        <input type="text" id="schedule_period_name" name="schedule_period_name" required><br>
+        <select id="schedule_period_name" name="schedule_period_name" required>
+            {% for period in schedule_periods %}
+                <option value="{{ period }}">{{ period }}</option>
+            {% endfor %}
+        </select><br>
 
         <label for="route_number">Route Number:</label>
-        <input type="number" id="route_number" name="route_number" required><br>
+        <select id="route_number" name="route_number" required>
+            {% for number in route_numbers %}
+                <option value="{{ number }}">{{ number }}</option>
+            {% endfor %}
+        </select><br>
 
         <label for="route_name">Route Name:</label>
-        <input type="text" id="route_name" name="route_name" required><br>
+        <select id="route_name" name="route_name" required>
+            {% for name in route_names %}
+                <option value="{{ name }}">{{ name }}</option>
+            {% endfor %}
+        </select><br>
 
         <label for="day_type">Day Type:</label>
         <select id="day_type" name="day_type" required>
-            <option value="Weekday">Weekday</option>
-            <option value="Saturday">Saturday</option>
-            <option value="Sunday">Sunday</option>
+            {% for day in day_types %}
+                <option value="{{ day }}">{{ day }}</option>
+            {% endfor %}
         </select><br>
 
         <label for="time_period">Time Period:</label>
         <select id="time_period" name="time_period" required>
-            <option value="Morning">Morning</option>
-            <option value="Mid-Day">Mid-Day</option>
-            <option value="PM Peak">PM Peak</option>
-            <option value="Evening">Evening</option>
-            <option value="Night">Night</option>
+            {% for period in time_periods %}
+                <option value="{{ period }}">{{ period }}</option>
+            {% endfor %}
         </select><br>
 
         <button type="submit">Predict</button>
     </form>
+
+    {% if prediction %}
+    <h2>Predictions for {{ prediction.time_period }}:</h2>
+    <p>Average Boardings: {{ prediction.boardings }}</p>
+    <p>Average Alightings: {{ prediction.alightings }}</p>
+    {% endif %}
 </body>
 </html>
