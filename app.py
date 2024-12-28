@@ -1,8 +1,8 @@
-import os
 from flask import Flask, request, jsonify, render_template
 import pandas as pd
 import joblib
 from datetime import datetime
+from flask_cors import CORS
 
 app = Flask(__name__)
 
@@ -32,13 +32,19 @@ def home():
 
 @app.route('/get_route_names', methods=['POST'])
 def get_route_names():
-    # Get selected route_number from the request
-    route_number = int(request.json['route_number'])
-    
-    # Filter route names based on route_number
-    route_names = df[df['route_number'] == route_number]['route_name'].unique().tolist()
-    
-    return jsonify(route_names)
+    try:
+        # Get selected route_number from the request
+        route_number = int(request.json['route_number'])
+        app.logger.info(f"Received request for route number: {route_number}")
+        
+        # Filter route names based on route_number
+        route_names = df[df['route_number'] == route_number]['route_name'].unique().tolist()
+        app.logger.info(f"Found route names: {route_names}")
+        
+        return jsonify(route_names)
+    except Exception as e:
+        app.logger.error(f"Error in get_route_names: {str(e)}")
+        return jsonify({"error": str(e)}), 400
 
 @app.route('/predict', methods=['POST'])
 def predict():
@@ -87,6 +93,7 @@ def predict():
             time_periods=['Morning', 'Mid-Day', 'PM Peak', 'Evening', 'Night']
         )
     except Exception as e:
+        app.logger.error(f"Error in predict: {str(e)}")
         return jsonify({"error": str(e)}), 400
 
 if __name__ == '__main__':
