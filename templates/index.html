@@ -28,7 +28,7 @@
                 routeNames.forEach(name => {
                     const option = document.createElement('option');
                     option.value = name;
-                    option.textContent = name;
+                    option.textContent = name || 'Select a route name';
                     routeNameDropdown.appendChild(option);
                 });
             } catch (error) {
@@ -37,8 +37,10 @@
         }
 
         document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM fully loaded and parsed');
             const routeNumberDropdown = document.getElementById('route_number');
             routeNumberDropdown.addEventListener('change', updateRouteNames);
+            console.log('Event listener added to route number dropdown');
         });
     </script>
 </head>
@@ -48,33 +50,33 @@
         <label for="schedule_period_name">Schedule Period Name:</label>
         <select id="schedule_period_name" name="schedule_period_name" required>
             {% for period in schedule_periods %}
-                <option value="{{ period }}">{{ period }}</option>
+                <option value="{{ period }}">{{ period or 'Select a schedule period' }}</option>
             {% endfor %}
         </select><br>
 
         <label for="route_number">Route Number:</label>
         <select id="route_number" name="route_number" required>
             {% for number in route_numbers %}
-                <option value="{{ number }}">{{ number }}</option>
+                <option value="{{ number }}">{{ number or 'Select a route number' }}</option>
             {% endfor %}
         </select><br>
 
         <label for="route_name">Route Name:</label>
         <select id="route_name" name="route_name" required>
-            <!-- Route names will be populated dynamically -->
+            <option value="">Select a route name</option>
         </select><br>
 
         <label for="day_type">Day Type:</label>
         <select id="day_type" name="day_type" required>
             {% for day in day_types %}
-                <option value="{{ day }}">{{ day }}</option>
+                <option value="{{ day }}">{{ day or 'Select a day type' }}</option>
             {% endfor %}
         </select><br>
 
         <label for="time_period">Time Period:</label>
         <select id="time_period" name="time_period" required>
             {% for period in time_periods %}
-                <option value="{{ period }}">{{ period }}</option>
+                <option value="{{ period }}">{{ period or 'Select a time period' }}</option>
             {% endfor %}
         </select><br>
 
