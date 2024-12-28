@@ -7,86 +7,102 @@
     <script>
         async function updateRouteNames() {
             const routeNumber = document.getElementById('route_number').value;
-            console.log('Selected route number:', routeNumber);
-            
+
+            // Check if route number is selected
+            if (!routeNumber) {
+                // Clear route_name dropdown if no route_number is selected
+                const routeNameDropdown = document.getElementById('route_name');
+                routeNameDropdown.innerHTML = '<option value="">Select a Route Name</option>';
+                return;
+            }
+
+            // Send a POST request to /get_route_names
             try {
                 const response = await fetch('/get_route_names', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ route_number: routeNumber })
                 });
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                
-                const routeNames = await response.json();
-                console.log('Received route names:', routeNames);
 
-                const routeNameDropdown = document.getElementById('route_name');
-                routeNameDropdown.innerHTML = ''; // Clear existing options
-                routeNames.forEach(name => {
-                    const option = document.createElement('option');
-                    option.value = name;
-                    option.textContent = name || 'Select a route name';
-                    routeNameDropdown.appendChild(option);
-                });
+                if (response.ok) {
+                    const routeNames = await response.json();
+
+                    // Update the route_name dropdown
+                    const routeNameDropdown = document.getElementById('route_name');
+                    routeNameDropdown.innerHTML = ''; // Clear existing options
+                    routeNames.forEach(name => {
+                        const option = document.createElement('option');
+                        option.value = name;
+                        option.textContent = name || 'Select a Route Name';
+                        routeNameDropdown.appendChild(option);
+                    });
+                } else {
+                    console.error("Failed to fetch route names:", response.statusText);
+                }
             } catch (error) {
-                console.error('Error updating route names:', error);
+                console.error("Error fetching route names:", error);
             }
         }
-
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('DOM fully loaded and parsed');
-            const routeNumberDropdown = document.getElementById('route_number');
-            routeNumberDropdown.addEventListener('change', updateRouteNames);
-            console.log('Event listener added to route number dropdown');
-        });
     </script>
 </head>
 <body>
     <h1>Transit Prediction Model</h1>
+
+    <!-- Form for user input -->
     <form action="/predict" method="POST">
+        <!-- Schedule Period Name -->
         <label for="schedule_period_name">Schedule Period Name:</label>
         <select id="schedule_period_name" name="schedule_period_name" required>
             {% for period in schedule_periods %}
-                <option value="{{ period }}">{{ period or 'Select a schedule period' }}</option>
+                <option value="{{ period }}">{{ period or 'Select a Schedule Period' }}</option>
             {% endfor %}
-        </select><br>
+        </select><br><br>
 
+        <!-- Route Number -->
         <label for="route_number">Route Number:</label>
-        <select id="route_number" name="route_number" required>
+        <select id="route_number" name="route_number" required onchange="updateRouteNames()">
             {% for number in route_numbers %}
-                <option value="{{ number }}">{{ number or 'Select a route number' }}</option>
+                <option value="{{ number }}">{{ number or 'Select a Route Number' }}</option>
             {% endfor %}
-        </select><br>
+        </select><br><br>
 
+        <!-- Route Name -->
         <label for="route_name">Route Name:</label>
         <select id="route_name" name="route_name" required>
-            <option value="">Select a route name</option>
-        </select><br>
+            <option value="">Select a Route Name</option>
+        </select><br><br>
 
+        <!-- Day Type -->
         <label for="day_type">Day Type:</label>
         <select id="day_type" name="day_type" required>
             {% for day in day_types %}
-                <option value="{{ day }}">{{ day or 'Select a day type' }}</option>
+                <option value="{{ day }}">{{ day or 'Select a Day Type' }}</option>
             {% endfor %}
-        </select><br>
+        </select><br><br>
 
+        <!-- Time Period -->
         <label for="time_period">Time Period:</label>
         <select id="time_period" name="time_period" required>
             {% for period in time_periods %}
-                <option value="{{ period }}">{{ period or 'Select a time period' }}</option>
+                <option value="{{ period }}">{{ period or 'Select a Time Period' }}</option>
             {% endfor %}
-        </select><br>
+        </select><br><br>
 
+        <!-- Submit Button -->
         <button type="submit">Predict</button>
     </form>
 
+    <!-- Display Predictions -->
     {% if prediction %}
         <h2>Predictions</h2>
         <p>Average Boardings: {{ prediction.boardings }}</p>
         <p>Average Alightings: {{ prediction.alightings }}</p>
+    {% endif %}
+
+    <!-- Display Error Messages -->
+    {% if error %}
+        <h2 style="color: red;">Error</h2>
+        <p>{{ error }}</p>
     {% endif %}
 </body>
 </html>
