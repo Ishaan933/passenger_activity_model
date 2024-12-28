@@ -1,7 +1,7 @@
+import os
 from flask import Flask, request, jsonify, render_template
 import pandas as pd
 import joblib
-import os
 from datetime import datetime
 
 app = Flask(__name__)
@@ -16,10 +16,9 @@ df = pd.read_csv('dataset/stop_10637_data.csv')
 
 @app.route('/')
 def home():
-    # Extract unique options from dataset for dropdowns
+    # Extract unique options for dropdowns
     schedule_periods = ['Summer 2025', 'Fall 2025', 'Spring 2025', 'Winter 2026']
     route_numbers = df['route_number'].unique().tolist()
-    route_names = df['route_name'].unique().tolist()
     day_types = ['Weekday', 'Saturday', 'Sunday']
     time_periods = ['Morning', 'Mid-Day', 'PM Peak', 'Evening', 'Night']
     
@@ -27,15 +26,24 @@ def home():
         'index.html',
         schedule_periods=schedule_periods,
         route_numbers=route_numbers,
-        route_names=route_names,
         day_types=day_types,
         time_periods=time_periods
     )
 
+@app.route('/get_route_names', methods=['POST'])
+def get_route_names():
+    # Get selected route_number from the request
+    route_number = int(request.json['route_number'])
+    
+    # Filter route names based on route_number
+    route_names = df[df['route_number'] == route_number]['route_name'].unique().tolist()
+    
+    return jsonify(route_names)
+
 @app.route('/predict', methods=['POST'])
 def predict():
     try:
-        # Get data from form
+        # Get user inputs from the form
         data = request.form
         schedule_period_name = data['schedule_period_name']
         route_number = int(data['route_number'])
@@ -46,7 +54,12 @@ def predict():
         # Determine year and month
         year = 2025 if '2025' in schedule_period_name else 2026
         month = {'Spring': 4, 'Summer': 7, 'Fall': 10, 'Winter': 1}[schedule_period_name.split()[0]]
-        
+
+        # Handle new schedule period names
+        if schedule_period_name not in encodings['schedule_period_name']:
+            max_encoding = max(encodings['schedule_period_name'].values())
+            encodings['schedule_period_name'][schedule_period_name] = max_encoding + 1
+
         # Prepare input data
         input_data = pd.DataFrame([{
             'year': year,
@@ -70,14 +83,12 @@ def predict():
             },
             schedule_periods=['Summer 2025', 'Fall 2025', 'Spring 2025', 'Winter 2026'],
             route_numbers=df['route_number'].unique().tolist(),
-            route_names=df['route_name'].unique().tolist(),
             day_types=['Weekday', 'Saturday', 'Sunday'],
             time_periods=['Morning', 'Mid-Day', 'PM Peak', 'Evening', 'Night']
         )
     except Exception as e:
         return jsonify({"error": str(e)}), 400
 
-# Debug and Run 
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5000))  
-    app.run(host='0.0.0.0', port=port)    
+    port = int(os.environ.get('PORT', 5000))  # Use port from environment or default to 5000
+    app.run(host='0.0.0.0', port=port)
