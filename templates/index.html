@@ -4,6 +4,29 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Transit Prediction Model</title>
+    <script>
+        async function updateRouteNames() {
+            const routeNumber = document.getElementById('route_number').value;
+            
+            // Fetch route names from the server
+            const response = await fetch('/get_route_names', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ route_number: routeNumber })
+            });
+            const routeNames = await response.json();
+
+            // Update the route_name dropdown
+            const routeNameDropdown = document.getElementById('route_name');
+            routeNameDropdown.innerHTML = ''; // Clear existing options
+            routeNames.forEach(name => {
+                const option = document.createElement('option');
+                option.value = name;
+                option.textContent = name;
+                routeNameDropdown.appendChild(option);
+            });
+        }
+    </script>
 </head>
 <body>
     <h1>Transit Prediction Model</h1>
@@ -16,7 +39,7 @@
         </select><br>
 
         <label for="route_number">Route Number:</label>
-        <select id="route_number" name="route_number" required>
+        <select id="route_number" name="route_number" required onchange="updateRouteNames()">
             {% for number in route_numbers %}
                 <option value="{{ number }}">{{ number }}</option>
             {% endfor %}
@@ -24,9 +47,7 @@
 
         <label for="route_name">Route Name:</label>
         <select id="route_name" name="route_name" required>
-            {% for name in route_names %}
-                <option value="{{ name }}">{{ name }}</option>
-            {% endfor %}
+            <!-- Route names will be populated dynamically -->
         </select><br>
 
         <label for="day_type">Day Type:</label>
@@ -47,9 +68,9 @@
     </form>
 
     {% if prediction %}
-    <h2>Predictions for {{ prediction.time_period }}:</h2>
-    <p>Average Boardings: {{ prediction.boardings }}</p>
-    <p>Average Alightings: {{ prediction.alightings }}</p>
+        <h2>Predictions</h2>
+        <p>Average Boardings: {{ prediction.boardings }}</p>
+        <p>Average Alightings: {{ prediction.alightings }}</p>
     {% endif %}
 </body>
 </html>
