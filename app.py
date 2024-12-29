@@ -94,37 +94,16 @@ def predict():
             'average_boardings': latest_historical['average_boardings'],
             'average_alightings': latest_historical['average_alightings'],
             'schedule_period_start_date': latest_historical['schedule_period_start_date'],
-            'schedule_period_end_date': latest_historical['schedule_period_end_date']
+            'schedule_period_end_date': latest_historical['schedule_period_end_date'],
+            'location': latest_historical['location']
         }
-
-        # Calculate the number of weekdays between start and end dates
-        start_date = datetime.strptime(latest_historical['schedule_period_start_date'], '%Y-%m-%d')
-        end_date = datetime.strptime(latest_historical['schedule_period_end_date'], '%Y-%m-%d')
-        total_days = (end_date - start_date).days + 1
-        weekdays = sum(1 for day in (start_date + timedelta(days=i) for i in range(total_days)) if day.weekday() < 5)
-
-        # Estimate totals for historical and predicted data
-        estimated_boardings = latest_historical['average_boardings'] * weekdays
-        estimated_alightings = latest_historical['average_alightings'] * weekdays
     else:
         historical_data = None
-        weekdays = 0
-        estimated_boardings = None
-        estimated_alightings = None
-
-    # Use the same weekdays for predicted totals
-    estimated_predicted_boardings = boardings_prediction * weekdays if weekdays > 0 else None
-    estimated_predicted_alightings = alightings_prediction * weekdays if weekdays > 0 else None
 
     return jsonify({
         'boardings_prediction': boardings_prediction,
         'alightings_prediction': alightings_prediction,
-        'historical_data': historical_data,
-        'estimated_boardings': estimated_boardings,
-        'estimated_alightings': estimated_alightings,
-        'estimated_predicted_boardings': estimated_predicted_boardings,
-        'estimated_predicted_alightings': estimated_predicted_alightings,
-        'total_weekdays': weekdays
+        'historical_data': historical_data
     })
 
 if __name__ == '__main__':
