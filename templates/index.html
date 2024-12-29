@@ -16,8 +16,8 @@
                 return;
             }
 
-            // Send a POST request to /get_route_names
             try {
+                // Send a POST request to /get_route_names
                 const response = await fetch('/get_route_names', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -48,9 +48,7 @@
 <body>
     <h1>Transit Prediction Model</h1>
 
-    <!-- Form for user input -->
     <form action="/predict" method="POST">
-        <!-- Schedule Period Name -->
         <label for="schedule_period_name">Schedule Period Name:</label>
         <select id="schedule_period_name" name="schedule_period_name" required>
             {% for period in schedule_periods %}
@@ -58,7 +56,6 @@
             {% endfor %}
         </select><br><br>
 
-        <!-- Route Number -->
         <label for="route_number">Route Number:</label>
         <select id="route_number" name="route_number" required onchange="updateRouteNames()">
             {% for number in route_numbers %}
@@ -66,13 +63,11 @@
             {% endfor %}
         </select><br><br>
 
-        <!-- Route Name -->
         <label for="route_name">Route Name:</label>
         <select id="route_name" name="route_name" required>
             <option value="">Select a Route Name</option>
         </select><br><br>
 
-        <!-- Day Type -->
         <label for="day_type">Day Type:</label>
         <select id="day_type" name="day_type" required>
             {% for day in day_types %}
@@ -80,7 +75,6 @@
             {% endfor %}
         </select><br><br>
 
-        <!-- Time Period -->
         <label for="time_period">Time Period:</label>
         <select id="time_period" name="time_period" required>
             {% for period in time_periods %}
@@ -88,18 +82,15 @@
             {% endfor %}
         </select><br><br>
 
-        <!-- Submit Button -->
         <button type="submit">Predict</button>
     </form>
 
-    <!-- Display Predictions -->
     {% if prediction %}
         <h2>Predictions</h2>
         <p>Average Boardings: {{ prediction.boardings }}</p>
         <p>Average Alightings: {{ prediction.alightings }}</p>
     {% endif %}
 
-    <!-- Display Error Messages -->
     {% if error %}
         <h2 style="color: red;">Error</h2>
         <p>{{ error }}</p>
