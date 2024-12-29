@@ -4,7 +4,7 @@ import pandas as pd
 import joblib
 from datetime import datetime, timedelta
 
-app = Flask(__name__)
+app = Flask(__name__) 
 
 # Load the dataset
 file_path = 'dataset/stop_10637_data.csv'
