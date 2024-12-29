@@ -14,6 +14,11 @@ rf_boardings = joblib.load('models/rf_boardings.pkl')
 rf_alightings = joblib.load('models/rf_alightings.pkl')
 encodings = joblib.load('models/encodings.pkl')
 
+@app.route('/')
+def home():
+    # Serve the index.html page
+    return render_template('index.html')
+    
 @app.route('/get_route_numbers', methods=['POST'])
 def get_route_numbers():
     data = request.get_json()
