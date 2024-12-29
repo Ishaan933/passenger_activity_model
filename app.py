@@ -37,8 +37,7 @@ def get_route_names():
     stop_number = data.get('stop_number', 10637)
     route_number = data.get('route_number')
 
-    filtered_data = df[(df['schedule_period_name'] == schedule_period_name) &
-                       (df['stop_number'] == stop_number) & 
+    filtered_data = df[(df['stop_number'] == stop_number) & 
                        (df['route_number'] == route_number)]
     unique_route_names = filtered_data['route_name'].unique().tolist()
 
