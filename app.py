@@ -2,7 +2,6 @@ import os
 from flask import Flask, request, jsonify, render_template
 import pandas as pd
 import joblib
-from datetime import datetime
 from flask_cors import CORS
 
 app = Flask(__name__)
@@ -16,33 +15,32 @@ encodings = joblib.load('models/encodings.pkl')
 # Load dataset
 df = pd.read_csv('dataset/stop_10637_data.csv')
 
+# Constants for dropdowns
+SCHEDULE_PERIODS = ['', 'Summer 2025', 'Fall 2025', 'Spring 2025', 'Winter 2026']
+DAY_TYPES = ['', 'Weekday', 'Saturday', 'Sunday']
+TIME_PERIODS = ['', 'Morning', 'Mid-Day', 'PM Peak', 'Evening', 'Night']
+
 @app.route('/')
 def home():
-    # Extract unique options for dropdowns
-    schedule_periods = ['', 'Summer 2025', 'Fall 2025', 'Spring 2025', 'Winter 2026']
+    """
+    Render the main page with dropdowns preloaded with options.
+    """
     route_numbers = [''] + df['route_number'].unique().tolist()
-    day_types = ['', 'Weekday', 'Saturday', 'Sunday']
-    time_periods = ['', 'Morning', 'Mid-Day', 'PM Peak', 'Evening', 'Night']
-    
     return render_template(
         'index.html',
-        schedule_periods=schedule_periods,
+        schedule_periods=SCHEDULE_PERIODS,
         route_numbers=route_numbers,
-        day_types=day_types,
-        time_periods=time_periods
+        day_types=DAY_TYPES,
+        time_periods=TIME_PERIODS
     )
 
-@app.route('/get_route_names', methods=['GET', 'POST'])
+@app.route('/get_route_names', methods=['POST'])
 def get_route_names():
     """
     Get route names based on the selected route number.
     """
     try:
-        # Handle GET request for debugging (optional)
-        if request.method == 'GET':
-            return "This endpoint is for retrieving route names. Use POST to send a route number.", 200
-        
-        # Handle POST request to fetch route names
+        # Retrieve the route_number from the request
         route_number = request.json.get('route_number', None)
         app.logger.info(f"Fetching route names for route number: {route_number}")
         
@@ -62,25 +60,36 @@ def get_route_names():
 
 @app.route('/predict', methods=['POST'])
 def predict():
+    """
+    Predict average boardings and alightings based on user inputs.
+    """
     try:
-        # Get user inputs from the form
+        # Retrieve form data
         data = request.form
-        schedule_period_name = data['schedule_period_name']
-        route_number = int(data['route_number'])
-        route_name = data['route_name']
-        day_type = data['day_type']
-        time_period = data['time_period']
-        
-        # Determine year and month
+        schedule_period_name = data.get('schedule_period_name', '')
+        route_number = data.get('route_number', '')
+        route_name = data.get('route_name', '')
+        day_type = data.get('day_type', '')
+        time_period = data.get('time_period', '')
+
+        # Validate inputs
+        if not (schedule_period_name and route_number and route_name and day_type and time_period):
+            app.logger.warning("Missing input fields for prediction.")
+            return render_template(
+                'index.html',
+                error="All fields are required for prediction.",
+                schedule_periods=SCHEDULE_PERIODS,
+                route_numbers=[''] + df['route_number'].unique().tolist(),
+                day_types=DAY_TYPES,
+                time_periods=TIME_PERIODS
+            )
+
+        # Convert inputs
+        route_number = int(route_number)
         year = 2025 if '2025' in schedule_period_name else 2026
         month = {'Spring': 4, 'Summer': 7, 'Fall': 10, 'Winter': 1}[schedule_period_name.split()[0]]
 
-        # Handle new schedule period names
-        if schedule_period_name not in encodings['schedule_period_name']:
-            max_encoding = max(encodings['schedule_period_name'].values())
-            encodings['schedule_period_name'][schedule_period_name] = max_encoding + 1
-
-        # Prepare input data
+        # Prepare input data for prediction
         input_data = pd.DataFrame([{
             'year': year,
             'month': month,
@@ -91,25 +100,33 @@ def predict():
             'time_period': encodings['time_period'][time_period]
         }])
 
-        # Make predictions
+        # Perform predictions
         boardings_prediction = rf_boardings.predict(input_data)[0]
         alightings_prediction = rf_alightings.predict(input_data)[0]
 
         return render_template(
             'index.html',
             prediction={
-                "boardings": boardings_prediction,
-                "alightings": alightings_prediction
+                "boardings": f"{boardings_prediction:.2f}",
+                "alightings": f"{alightings_prediction:.2f}"
             },
-            schedule_periods=['', 'Summer 2025', 'Fall 2025', 'Spring 2025', 'Winter 2026'],
+            schedule_periods=SCHEDULE_PERIODS,
             route_numbers=[''] + df['route_number'].unique().tolist(),
-            day_types=['', 'Weekday', 'Saturday', 'Sunday'],
-            time_periods=['', 'Morning', 'Mid-Day', 'PM Peak', 'Evening', 'Night']
+            day_types=DAY_TYPES,
+            time_periods=TIME_PERIODS
         )
     except Exception as e:
         app.logger.error(f"Error in predict: {str(e)}")
-        return jsonify({"error": str(e)}), 400
+        return render_template(
+            'index.html',
+            error="An error occurred during prediction. Please check your inputs.",
+            schedule_periods=SCHEDULE_PERIODS,
+            route_numbers=[''] + df['route_number'].unique().tolist(),
+            day_types=DAY_TYPES,
+            time_periods=TIME_PERIODS
+        )
 
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5000))  # Use port from environment or default to 5000
+    # Use port from environment or default to 5000
+    port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port)
