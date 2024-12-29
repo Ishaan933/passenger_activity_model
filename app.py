@@ -77,9 +77,31 @@ def predict():
     boardings_prediction = rf_boardings.predict(input_data)[0]
     alightings_prediction = rf_alightings.predict(input_data)[0]
 
+    # Find the latest historical data for the given inputs
+    filtered_data = df[(df['route_number'] == route_number) &
+                       (df['route_name'] == route_name) &
+                       (df['day_type'] == day_type) &
+                       (df['time_period'] == time_period)].sort_values('schedule_period_start_date', ascending=False)
+
+    if not filtered_data.empty:
+        latest_historical = filtered_data.iloc[0]
+        historical_data = {
+            'schedule_period_name': latest_historical['schedule_period_name'],
+            'route_number': latest_historical['route_number'],
+            'route_name': latest_historical['route_name'],
+            'day_type': latest_historical['day_type'],
+            'time_period': latest_historical['time_period'],
+            'average_boardings': latest_historical['average_boardings'],
+            'average_alightings': latest_historical['average_alightings'],
+            'schedule_period_start_date': latest_historical['schedule_period_start_date']
+        }
+    else:
+        historical_data = None
+
     return jsonify({
         'boardings_prediction': boardings_prediction,
-        'alightings_prediction': alightings_prediction
+        'alightings_prediction': alightings_prediction,
+        'historical_data': historical_data
     })
 
 if __name__ == '__main__':
