@@ -68,7 +68,7 @@
         <button type="button" onclick="getPrediction()">Get Prediction</button>
     </form>
 
-    <h2>Prediction Results:</h2>
+    <br><h2>Prediction Results:</h2>
     <div id="results"></div>
 
     <script>
@@ -139,6 +139,7 @@
                 // Display historical data if available
                 if (data.historical_data) {
                     resultsHTML += `
+                        <br>
                         <h3>Latest Historical Data:</h3>
                         <p><strong>Schedule Period:</strong> ${data.historical_data.schedule_period_name}</p>
                         <p><strong>Route Number:</strong> ${data.historical_data.route_number}</p>
