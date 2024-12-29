@@ -3,97 +3,126 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Transit Prediction Model</title>
-    <script>
-        async function updateRouteNames() {
-            const routeNumber = document.getElementById('route_number').value;
-
-            // Check if route number is selected
-            if (!routeNumber) {
-                // Clear route_name dropdown if no route_number is selected
-                const routeNameDropdown = document.getElementById('route_name');
-                routeNameDropdown.innerHTML = '<option value="">Select a Route Name</option>';
-                return;
-            }
-
-            try {
-                // Send a POST request to /get_route_names
-                const response = await fetch('/get_route_names', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ route_number: routeNumber })
-                });
-
-                if (response.ok) {
-                    const routeNames = await response.json();
-
-                    // Update the route_name dropdown
-                    const routeNameDropdown = document.getElementById('route_name');
-                    routeNameDropdown.innerHTML = ''; // Clear existing options
-                    routeNames.forEach(name => {
-                        const option = document.createElement('option');
-                        option.value = name;
-                        option.textContent = name || 'Select a Route Name';
-                        routeNameDropdown.appendChild(option);
-                    });
-                } else {
-                    console.error("Failed to fetch route names:", response.statusText);
-                }
-            } catch (error) {
-                console.error("Error fetching route names:", error);
-            }
+    <title>Passenger Activity Prediction</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
         }
-    </script>
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            font-weight: bold;
+        }
+        select, button {
+            padding: 10px;
+            font-size: 16px;
+        }
+    </style>
 </head>
 <body>
-    <h1>Transit Prediction Model</h1>
-
-    <form action="/predict" method="POST">
-        <label for="schedule_period_name">Schedule Period Name:</label>
-        <select id="schedule_period_name" name="schedule_period_name" required>
-            {% for period in schedule_periods %}
-                <option value="{{ period }}">{{ period or 'Select a Schedule Period' }}</option>
-            {% endfor %}
-        </select><br><br>
-
-        <label for="route_number">Route Number:</label>
-        <select id="route_number" name="route_number" required onchange="updateRouteNames()">
-            {% for number in route_numbers %}
-                <option value="{{ number }}">{{ number or 'Select a Route Number' }}</option>
-            {% endfor %}
-        </select><br><br>
-
-        <label for="route_name">Route Name:</label>
-        <select id="route_name" name="route_name" required>
-            <option value="">Select a Route Name</option>
-        </select><br><br>
-
-        <label for="day_type">Day Type:</label>
-        <select id="day_type" name="day_type" required>
-            {% for day in day_types %}
-                <option value="{{ day }}">{{ day or 'Select a Day Type' }}</option>
-            {% endfor %}
-        </select><br><br>
-
-        <label for="time_period">Time Period:</label>
-        <select id="time_period" name="time_period" required>
-            {% for period in time_periods %}
-                <option value="{{ period }}">{{ period or 'Select a Time Period' }}</option>
-            {% endfor %}
-        </select><br><br>
-
-        <button type="submit">Predict</button>
+    <h1>Passenger Activity Prediction</h1>
+    <form id="predictionForm">
+        <div class="form-group">
+            <label for="schedule_period">Select Schedule Period:</label>
+            <select id="schedule_period" onchange="fetchRouteNumbers()" required>
+                <option value="Summer 2025">Summer 2025</option>
+                <option value="Fall 2025">Fall 2025</option>
+                <option value="Spring 2025">Spring 2025</option>
+                <option value="Winter 2026">Winter 2026</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="route_number">Select Route Number:</label>
+            <select id="route_number" onchange="fetchRouteNames()" required>
+                <option value="">Select a schedule period first</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="route_name">Select Route Name:</label>
+            <select id="route_name" required>
+                <option value="">Select a route number first</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="day_type">Select Day Type:</label>
+            <select id="day_type" required>
+                <option value="Weekday">Weekday</option>
+                <option value="Saturday">Saturday</option>
+                <option value="Sunday">Sunday</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="time_period">Select Time Period:</label>
+            <select id="time_period" required>
+                <option value="Morning">Morning</option>
+                <option value="Mid-Day">Mid-Day</option>
+                <option value="PM Peak">PM Peak</option>
+                <option value="Evening">Evening</option>
+                <option value="Night">Night</option>
+            </select>
+        </div>
+        <button type="button" onclick="getPrediction()">Get Prediction</button>
     </form>
 
-    {% if prediction %}
-        <h2>Predictions</h2>
-        <p>Average Boardings: {{ prediction.boardings }}</p>
-        <p>Average Alightings: {{ prediction.alightings }}</p>
-    {% endif %}
+    <h2>Prediction Results:</h2>
+    <div id="results"></div>
 
-    {% if error %}
-        <h2 style="color: red;">Error</h2>
-        <p>{{ error }}</p>
-    {% endif %}
+    <script>
+        async function fetchRouteNumbers() {
+            const schedulePeriod = document.getElementById('schedule_period').value;
+            const payload = { schedule_period_name: schedulePeriod, stop_number: 10637 };
+            
+            const response = await fetch('/get_route_numbers', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload),
+            });
+
+            const data = await response.json();
+            const routeNumberDropdown = document.getElementById('route_number');
+            routeNumberDropdown.innerHTML = data.route_numbers.map(route => `<option value="${route}">${route}</option>`).join('');
+        }
+
+        async function fetchRouteNames() {
+            const schedulePeriod = document.getElementById('schedule_period').value;
+            const routeNumber = document.getElementById('route_number').value;
+            const payload = { schedule_period_name: schedulePeriod, stop_number: 10637, route_number: routeNumber };
+            
+            const response = await fetch('/get_route_names', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload),
+            });
+
+            const data = await response.json();
+            const routeNameDropdown = document.getElementById('route_name');
+            routeNameDropdown.innerHTML = data.route_names.map(name => `<option value="${name}">${name}</option>`).join('');
+        }
+
+        async function getPrediction() {
+            const payload = {
+                schedule_period_name: document.getElementById('schedule_period').value,
+                route_number: document.getElementById('route_number').value,
+                route_name: document.getElementById('route_name').value,
+                day_type: document.getElementById('day_type').value,
+                time_period: document.getElementById('time_period').value,
+            };
+
+            const response = await fetch('/predict', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload),
+            });
+
+            const data = await response.json();
+            document.getElementById('results').innerHTML = `
+                <p><strong>Boardings Prediction:</strong> ${data.boardings_prediction.toFixed(2)}</p>
+                <p><strong>Alightings Prediction:</strong> ${data.alightings_prediction.toFixed(2)}</p>
+            `;
+        }
+    </script>
 </body>
 </html>
