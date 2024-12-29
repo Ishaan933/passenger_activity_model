@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify, render_template
 import os
 import pandas as pd
 import joblib
+from datetime import datetime, timedelta
 
 app = Flask(__name__)
 
@@ -22,7 +23,6 @@ def home():
 @app.route('/get_route_numbers', methods=['POST'])
 def get_route_numbers():
     data = request.get_json()
-    schedule_period_name = data.get('schedule_period_name')
     stop_number = data.get('stop_number', 10637)
 
     filtered_data = df[df['stop_number'] == stop_number]
@@ -33,7 +33,6 @@ def get_route_numbers():
 @app.route('/get_route_names', methods=['POST'])
 def get_route_names():
     data = request.get_json()
-    schedule_period_name = data.get('schedule_period_name')
     stop_number = data.get('stop_number', 10637)
     route_number = data.get('route_number')
 
@@ -83,8 +82,24 @@ def predict():
                        (df['day_type'] == day_type) &
                        (df['time_period'] == time_period)].sort_values('schedule_period_start_date', ascending=False)
 
+    historical_data = None
     if not filtered_data.empty:
         latest_historical = filtered_data.iloc[0]
+        schedule_start = datetime.strptime(latest_historical['schedule_period_start_date'], '%Y-%m-%d')
+        schedule_end = datetime.strptime(latest_historical['schedule_period_end_date'], '%Y-%m-%d')
+
+        # Calculate total weekdays in the historical schedule period
+        total_weekdays = 0
+        current_date = schedule_start
+        while current_date <= schedule_end:
+            if current_date.weekday() < 5:  # Monday to Friday
+                total_weekdays += 1
+            current_date += timedelta(days=1)
+
+        # Estimate total boardings and alightings for historical data
+        historical_total_boardings = latest_historical['average_boardings'] * total_weekdays
+        historical_total_alightings = latest_historical['average_alightings'] * total_weekdays
+
         historical_data = {
             'schedule_period_name': latest_historical['schedule_period_name'],
             'route_number': latest_historical['route_number'],
@@ -93,16 +108,31 @@ def predict():
             'time_period': latest_historical['time_period'],
             'average_boardings': latest_historical['average_boardings'],
             'average_alightings': latest_historical['average_alightings'],
+            'total_boardings': historical_total_boardings,
+            'total_alightings': historical_total_alightings,
             'schedule_period_start_date': latest_historical['schedule_period_start_date'],
             'schedule_period_end_date': latest_historical['schedule_period_end_date'],
-            'location': latest_historical['location']
+            'location': latest_historical['location']  # Preserved field
         }
-    else:
-        historical_data = None
+
+    # Predict total boardings and alightings for the input schedule period
+    prediction_schedule_start = datetime(2025, 1, 1)
+    prediction_schedule_end = datetime(2025, 4, 30)
+    total_weekdays = 0
+    current_date = prediction_schedule_start
+    while current_date <= prediction_schedule_end:
+        if current_date.weekday() < 5:  # Monday to Friday
+            total_weekdays += 1
+        current_date += timedelta(days=1)
+
+    predicted_total_boardings = boardings_prediction * total_weekdays
+    predicted_total_alightings = alightings_prediction * total_weekdays
 
     return jsonify({
         'boardings_prediction': boardings_prediction,
         'alightings_prediction': alightings_prediction,
+        'predicted_total_boardings': predicted_total_boardings,
+        'predicted_total_alightings': predicted_total_alightings,
         'historical_data': historical_data
     })
 
