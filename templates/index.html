@@ -132,16 +132,14 @@
         
                 // Display predictions
                 let resultsHTML = `
-                    <h2>Prediction Results:</h2>
-                    <p><strong>Boardings Prediction:</strong> ${data.boardings_prediction.toFixed(2)}</p>
-                    <p><strong>Alightings Prediction:</strong> ${data.alightings_prediction.toFixed(2)}</p>
-                    <p><strong>Estimated Total Boardings (Predicted):</strong> ${data.estimated_predicted_boardings?.toFixed(2) || 'N/A'}</p>
-                    <p><strong>Estimated Total Alightings (Predicted):</strong> ${data.estimated_predicted_alightings?.toFixed(2) || 'N/A'}</p>
+                    <p><strong>Average Boardings Prediction:</strong> ${data.boardings_prediction.toFixed(2)}</p>
+                    <p><strong>Average Alightings Prediction:</strong> ${data.alightings_prediction.toFixed(2)}</p>
                 `;
         
                 // Display historical data if available
                 if (data.historical_data) {
                     resultsHTML += `
+                        <br>
                         <h3>Latest Historical Data:</h3>
                         <p><strong>Schedule Period:</strong> ${data.historical_data.schedule_period_name}</p>
                         <p><strong>Route Number:</strong> ${data.historical_data.route_number}</p>
@@ -150,10 +148,9 @@
                         <p><strong>Time Period:</strong> ${data.historical_data.time_period}</p>
                         <p><strong>Average Boardings:</strong> ${data.historical_data.average_boardings.toFixed(2)}</p>
                         <p><strong>Average Alightings:</strong> ${data.historical_data.average_alightings.toFixed(2)}</p>
-                        <p><strong>Start Date:</strong> ${data.historical_data.schedule_period_start_date}</p>
-                        <p><strong>End Date:</strong> ${data.historical_data.schedule_period_end_date}</p>
-                        <p><strong>Estimated Total Boardings (Historical):</strong> ${data.estimated_boardings?.toFixed(2) || 'N/A'}</p>
-                        <p><strong>Estimated Total Alightings (Historical):</strong> ${data.estimated_alightings?.toFixed(2) || 'N/A'}</p>
+                        <p><strong>Schedule Period Start Date:</strong> ${data.historical_data.schedule_period_start_date}</p>
+                        <p><strong>Schedule Period End Date:</strong> ${data.historical_data.schedule_period_end_date}</p>
+                        <p><strong>Location:</strong> ${data.historical_data.location}</p>
                     `;
                 } else {
                     resultsHTML += `<p><strong>Historical Data:</strong> No historical data available for the selected inputs.</p>`;
@@ -165,7 +162,6 @@
                 document.getElementById('results').innerHTML = `<p style="color: red;">An error occurred while fetching predictions. Please try again.</p>`;
             }
         }
-
 
     </script>
 </body>
