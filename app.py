@@ -42,6 +42,8 @@ def get_route_names():
 
     return jsonify({'route_names': unique_route_names})
 
+from datetime import datetime, timedelta
+
 @app.route('/predict', methods=['POST'])
 def predict():
     data = request.get_json()
@@ -85,8 +87,8 @@ def predict():
     historical_data = None
     if not filtered_data.empty:
         latest_historical = filtered_data.iloc[0]
-        schedule_start = datetime.strptime(latest_historical['schedule_period_start_date'], '%Y-%m-%d')
-        schedule_end = datetime.strptime(latest_historical['schedule_period_end_date'], '%Y-%m-%d')
+        schedule_start = datetime.strptime(latest_historical['schedule_period_start_date'], '%m/%d/%Y %I:%M:%S %p')
+        schedule_end = datetime.strptime(latest_historical['schedule_period_end_date'], '%m/%d/%Y %I:%M:%S %p')
 
         # Calculate total weekdays in the historical schedule period
         total_weekdays = 0
@@ -135,6 +137,7 @@ def predict():
         'predicted_total_alightings': predicted_total_alightings,
         'historical_data': historical_data
     })
+
 
 if __name__ == '__main__':
     # Use port from environment or default to 5000
