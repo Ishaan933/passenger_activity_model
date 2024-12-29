@@ -93,7 +93,9 @@ def predict():
             'time_period': latest_historical['time_period'],
             'average_boardings': latest_historical['average_boardings'],
             'average_alightings': latest_historical['average_alightings'],
-            'schedule_period_start_date': latest_historical['schedule_period_start_date']
+            'schedule_period_start_date': latest_historical['schedule_period_start_date'],
+            'schedule_period_end_date': latest_historical['schedule_period_end_date'],
+            'location': latest_historical['location']
         }
     else:
         historical_data = None
