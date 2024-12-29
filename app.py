@@ -136,8 +136,12 @@ def predict():
         'alightings_prediction': alightings_prediction,
         'predicted_total_boardings': predicted_total_boardings,
         'predicted_total_alightings': predicted_total_alightings,
+        'predicted_total_weekdays': total_weekdays,  # Add total weekdays for predictions
+        'prediction_schedule_start_date': prediction_schedule_start.strftime('%m/%d/%Y'),
+        'prediction_schedule_end_date': prediction_schedule_end.strftime('%m/%d/%Y'),
         'historical_data': historical_data
     })
+
 
 
 if __name__ == '__main__':
