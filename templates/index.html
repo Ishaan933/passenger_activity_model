@@ -123,24 +123,35 @@
                 day_type: document.getElementById('day_type').value,
                 time_period: document.getElementById('time_period').value,
             };
-
+        
             try {
                 const response = await fetch('/predict', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload),
                 });
-
+        
                 const data = await response.json();
-
+        
                 let resultsHTML = `
                     <p><strong>Average Boardings Prediction:</strong> ${data.boardings_prediction.toFixed(2)}</p>
                     <p><strong>Average Alightings Prediction:</strong> ${data.alightings_prediction.toFixed(2)}</p>
                     <p><strong>Total Predicted Boardings:</strong> ${data.predicted_total_boardings.toFixed(2)}</p>
                     <p><strong>Total Predicted Alightings:</strong> ${data.predicted_total_alightings.toFixed(2)}</p>
                 `;
-
+        
                 if (data.historical_data) {
+                    const weekdaysExplanation = `
+                        <p><strong>Calculation Breakdown:</strong></p>
+                        <ul>
+                            <li>Schedule Period Start Date: ${data.historical_data.schedule_period_start_date}</li>
+                            <li>Schedule Period End Date: ${data.historical_data.schedule_period_end_date}</li>
+                            <li>Total Weekdays in Schedule Period: ${data.historical_data.total_weekdays}</li>
+                            <li>Total Historical Boardings = Average Boardings (${data.historical_data.average_boardings.toFixed(2)}) × Total Weekdays (${data.historical_data.total_weekdays})</li>
+                            <li>Total Historical Alightings = Average Alightings (${data.historical_data.average_alightings.toFixed(2)}) × Total Weekdays (${data.historical_data.total_weekdays})</li>
+                        </ul>
+                    `;
+        
                     resultsHTML += `
                         <br>
                         <h3>Latest Historical Data:</h3>
@@ -153,20 +164,19 @@
                         <p><strong>Average Alightings:</strong> ${data.historical_data.average_alightings.toFixed(2)}</p>
                         <p><strong>Total Historical Boardings:</strong> ${data.historical_data.total_boardings.toFixed(2)}</p>
                         <p><strong>Total Historical Alightings:</strong> ${data.historical_data.total_alightings.toFixed(2)}</p>
-                        <p><strong>Schedule Period Start Date:</strong> ${data.historical_data.schedule_period_start_date}</p>
-                        <p><strong>Schedule Period End Date:</strong> ${data.historical_data.schedule_period_end_date}</p>
-                        <p><strong>Location:</strong> ${data.historical_data.location}</p>
+                        ${weekdaysExplanation}
                     `;
                 } else {
                     resultsHTML += `<p><strong>Historical Data:</strong> No historical data available for the selected inputs.</p>`;
                 }
-
+        
                 document.getElementById('results').innerHTML = resultsHTML;
             } catch (error) {
                 console.error('Error fetching predictions:', error);
                 document.getElementById('results').innerHTML = `<p style="color: red;">An error occurred while fetching predictions. Please try again.</p>`;
             }
         }
+
     </script>
 </body>
 </html>
