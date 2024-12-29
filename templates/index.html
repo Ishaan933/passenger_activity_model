@@ -20,27 +20,6 @@
             padding: 10px;
             font-size: 16px;
         }
-        .results-container {
-            display: flex;
-            justify-content: space-between;
-            gap: 20px;
-            margin-top: 20px;
-        }
-        .results-table {
-            border-collapse: collapse;
-            width: 48%;
-        }
-        .results-table th, .results-table td {
-            border: 1px solid #ddd;
-            padding: 8px;
-        }
-        .results-table th {
-            background-color: #f4f4f4;
-            text-align: left;
-        }
-        h2 {
-            margin-bottom: 10px;
-        }
     </style>
 </head>
 <body>
@@ -89,20 +68,8 @@
         <button type="button" onclick="getPrediction()">Get Prediction</button>
     </form>
 
-    <div class="results-container">
-        <div>
-            <h2>Prediction Results</h2>
-            <table class="results-table" id="predictionResults">
-                <!-- Table rows will be dynamically added -->
-            </table>
-        </div>
-        <div>
-            <h2>Latest Historical Data</h2>
-            <table class="results-table" id="historicalResults">
-                <!-- Table rows will be dynamically added -->
-            </table>
-        </div>
-    </div>
+    <br><h2>Prediction Results:</h2>
+    <div id="results"></div>
 
     <script>
         async function fetchRouteNumbers() {
@@ -156,50 +123,75 @@
                 day_type: document.getElementById('day_type').value,
                 time_period: document.getElementById('time_period').value,
             };
-
+        
             try {
                 const response = await fetch('/predict', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload),
                 });
-
+        
                 const data = await response.json();
-
-                // Populate Prediction Results table
-                const predictionResultsTable = document.getElementById('predictionResults');
-                predictionResultsTable.innerHTML = `
-                    <tr><th>Metric</th><th>Value</th></tr>
-                    <tr><td>Average Boardings Prediction</td><td>${data.boardings_prediction.toFixed(2)}</td></tr>
-                    <tr><td>Average Alightings Prediction</td><td>${data.alightings_prediction.toFixed(2)}</td></tr>
-                    <tr><td>Total Predicted Boardings</td><td>${data.predicted_total_boardings.toFixed(2)}</td></tr>
-                    <tr><td>Total Predicted Alightings</td><td>${data.predicted_total_alightings.toFixed(2)}</td></tr>
+        
+                let resultsHTML = `
+                    <p><strong>Average Boardings Prediction:</strong> ${data.boardings_prediction.toFixed(2)}</p>
+                    <p><strong>Average Alightings Prediction:</strong> ${data.alightings_prediction.toFixed(2)}</p>
+                    <p><strong>Total Predicted Boardings:</strong> ${data.predicted_total_boardings.toFixed(2)}</p>
+                    <p><strong>Total Predicted Alightings:</strong> ${data.predicted_total_alightings.toFixed(2)}</p>
                 `;
-
-                // Populate Historical Data table if available
-                const historicalResultsTable = document.getElementById('historicalResults');
+        
+                // Add breakdown for predictions
+                const predictionBreakdown = `
+                    <p><strong>Calculation Breakdown for Predictions:</strong></p>
+                    <ul>
+                        <li>Schedule Period: ${data.prediction_schedule_start_date} to ${data.prediction_schedule_end_date}</li>
+                        <li>Total Weekdays in Schedule Period: ${data.predicted_total_weekdays}</li>
+                        <li>Total Predicted Boardings = Average Boardings Prediction (${data.boardings_prediction.toFixed(2)}) × Total Weekdays (${data.predicted_total_weekdays})</li>
+                        <li>Total Predicted Alightings = Average Alightings Prediction (${data.alightings_prediction.toFixed(2)}) × Total Weekdays (${data.predicted_total_weekdays})</li>
+                    </ul>
+                `;
+        
+                resultsHTML += predictionBreakdown;
+        
+                // Add historical data breakdown if available
                 if (data.historical_data) {
-                    historicalResultsTable.innerHTML = `
-                        <tr><th>Metric</th><th>Value</th></tr>
-                        <tr><td>Schedule Period</td><td>${data.historical_data.schedule_period_name}</td></tr>
-                        <tr><td>Route Number</td><td>${data.historical_data.route_number}</td></tr>
-                        <tr><td>Route Name</td><td>${data.historical_data.route_name}</td></tr>
-                        <tr><td>Day Type</td><td>${data.historical_data.day_type}</td></tr>
-                        <tr><td>Time Period</td><td>${data.historical_data.time_period}</td></tr>
-                        <tr><td>Average Boardings</td><td>${data.historical_data.average_boardings.toFixed(2)}</td></tr>
-                        <tr><td>Average Alightings</td><td>${data.historical_data.average_alightings.toFixed(2)}</td></tr>
-                        <tr><td>Total Historical Boardings</td><td>${data.historical_data.total_boardings.toFixed(2)}</td></tr>
-                        <tr><td>Total Historical Alightings</td><td>${data.historical_data.total_alightings.toFixed(2)}</td></tr>
+                    const historicalBreakdown = `
+                        <p><strong>Calculation Breakdown for Historical Data:</strong></p>
+                        <ul>
+                            <li>Schedule Period Start Date: ${data.historical_data.schedule_period_start_date}</li>
+                            <li>Schedule Period End Date: ${data.historical_data.schedule_period_end_date}</li>
+                            <li>Total Weekdays in Schedule Period: ${data.historical_data.total_weekdays}</li>
+                            <li>Total Historical Boardings = Average Boardings (${data.historical_data.average_boardings.toFixed(2)}) × Total Weekdays (${data.historical_data.total_weekdays})</li>
+                            <li>Total Historical Alightings = Average Alightings (${data.historical_data.average_alightings.toFixed(2)}) × Total Weekdays (${data.historical_data.total_weekdays})</li>
+                        </ul>
+                    `;
+        
+                    resultsHTML += `
+                        <br>
+                        <h3>Latest Historical Data:</h3>
+                        <p><strong>Schedule Period:</strong> ${data.historical_data.schedule_period_name}</p>
+                        <p><strong>Route Number:</strong> ${data.historical_data.route_number}</p>
+                        <p><strong>Route Name:</strong> ${data.historical_data.route_name}</p>
+                        <p><strong>Day Type:</strong> ${data.historical_data.day_type}</p>
+                        <p><strong>Time Period:</strong> ${data.historical_data.time_period}</p>
+                        <p><strong>Average Boardings:</strong> ${data.historical_data.average_boardings.toFixed(2)}</p>
+                        <p><strong>Average Alightings:</strong> ${data.historical_data.average_alightings.toFixed(2)}</p>
+                        <p><strong>Total Historical Boardings:</strong> ${data.historical_data.total_boardings.toFixed(2)}</p>
+                        <p><strong>Total Historical Alightings:</strong> ${data.historical_data.total_alightings.toFixed(2)}</p>
+                        ${historicalBreakdown}
                     `;
                 } else {
-                    historicalResultsTable.innerHTML = `<tr><td colspan="2">No historical data available.</td></tr>`;
+                    resultsHTML += `<p><strong>Historical Data:</strong> No historical data available for the selected inputs.</p>`;
                 }
+        
+                document.getElementById('results').innerHTML = resultsHTML;
             } catch (error) {
                 console.error('Error fetching predictions:', error);
-                document.getElementById('predictionResults').innerHTML = `<tr><td colspan="2" style="color: red;">An error occurred while fetching predictions. Please try again.</td></tr>`;
-                document.getElementById('historicalResults').innerHTML = `<tr><td colspan="2" style="color: red;">An error occurred while fetching historical data. Please try again.</td></tr>`;
+                document.getElementById('results').innerHTML = `<p style="color: red;">An error occurred while fetching predictions. Please try again.</p>`;
             }
         }
+
+
     </script>
 </body>
 </html>
