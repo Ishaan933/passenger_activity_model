@@ -74,17 +74,26 @@
     <script>
         async function fetchRouteNumbers() {
             const schedulePeriod = document.getElementById('schedule_period').value;
-            const payload = { schedule_period_name: schedulePeriod, stop_number: 10637 };
-            
-            const response = await fetch('/get_route_numbers', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload),
-            });
 
-            const data = await response.json();
-            const routeNumberDropdown = document.getElementById('route_number');
-            routeNumberDropdown.innerHTML = data.route_numbers.map(route => `<option value="${route}">${route}</option>`).join('');
+             // Check if a valid value is selected
+            if (!schedulePeriod) {
+                return; // Do nothing if the blank option is selected
+            }
+             const payload = { schedule_period_name: schedulePeriod, stop_number: 10637 };
+    
+            try {
+                const response = await fetch('/get_route_numbers', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload),
+                });
+        
+                const data = await response.json();
+                const routeNumberDropdown = document.getElementById('route_number');
+                routeNumberDropdown.innerHTML = data.route_numbers.map(route => `<option value="${route}">${route}</option>`).join('');
+            } catch (error) {
+                console.error('Error fetching route numbers:', error);
+            }        
         }
 
         async function fetchRouteNames() {
