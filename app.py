@@ -112,6 +112,7 @@ def predict():
             'average_alightings': latest_historical['average_alightings'],
             'total_boardings': historical_total_boardings,
             'total_alightings': historical_total_alightings,
+            'total_weekdays': total_weekdays,  # Add this field
             'schedule_period_start_date': latest_historical['schedule_period_start_date'],
             'schedule_period_end_date': latest_historical['schedule_period_end_date'],
             'location': latest_historical['location']  # Preserved field
