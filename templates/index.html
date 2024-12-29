@@ -120,19 +120,46 @@
                 day_type: document.getElementById('day_type').value,
                 time_period: document.getElementById('time_period').value,
             };
-
-            const response = await fetch('/predict', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload),
-            });
-
-            const data = await response.json();
-            document.getElementById('results').innerHTML = `
-                <p><strong>Boardings Prediction:</strong> ${data.boardings_prediction.toFixed(2)}</p>
-                <p><strong>Alightings Prediction:</strong> ${data.alightings_prediction.toFixed(2)}</p>
-            `;
+        
+            try {
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload),
+                });
+        
+                const data = await response.json();
+        
+                // Display predictions
+                let resultsHTML = `
+                    <p><strong>Boardings Prediction:</strong> ${data.boardings_prediction.toFixed(2)}</p>
+                    <p><strong>Alightings Prediction:</strong> ${data.alightings_prediction.toFixed(2)}</p>
+                `;
+        
+                // Display historical data if available
+                if (data.historical_data) {
+                    resultsHTML += `
+                        <h3>Latest Historical Data:</h3>
+                        <p><strong>Schedule Period:</strong> ${data.historical_data.schedule_period_name}</p>
+                        <p><strong>Route Number:</strong> ${data.historical_data.route_number}</p>
+                        <p><strong>Route Name:</strong> ${data.historical_data.route_name}</p>
+                        <p><strong>Day Type:</strong> ${data.historical_data.day_type}</p>
+                        <p><strong>Time Period:</strong> ${data.historical_data.time_period}</p>
+                        <p><strong>Average Boardings:</strong> ${data.historical_data.average_boardings.toFixed(2)}</p>
+                        <p><strong>Average Alightings:</strong> ${data.historical_data.average_alightings.toFixed(2)}</p>
+                        <p><strong>Start Date:</strong> ${data.historical_data.schedule_period_start_date}</p>
+                    `;
+                } else {
+                    resultsHTML += `<p><strong>Historical Data:</strong> No historical data available for the selected inputs.</p>`;
+                }
+        
+                document.getElementById('results').innerHTML = resultsHTML;
+            } catch (error) {
+                console.error('Error fetching predictions:', error);
+                document.getElementById('results').innerHTML = `<p style="color: red;">An error occurred while fetching predictions. Please try again.</p>`;
+            }
         }
+
     </script>
 </body>
 </html>
