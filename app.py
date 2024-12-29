@@ -25,8 +25,7 @@ def get_route_numbers():
     schedule_period_name = data.get('schedule_period_name')
     stop_number = data.get('stop_number', 10637)
 
-    filtered_data = df[(df['schedule_period_name'] == schedule_period_name) & 
-                       (df['stop_number'] == stop_number)]
+    filtered_data = df[df['stop_number'] == stop_number]
     unique_route_numbers = filtered_data['route_number'].unique().tolist()
 
     return jsonify({'route_numbers': unique_route_numbers})
