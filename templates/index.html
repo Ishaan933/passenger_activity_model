@@ -140,9 +140,23 @@
                     <p><strong>Total Predicted Alightings:</strong> ${data.predicted_total_alightings.toFixed(2)}</p>
                 `;
         
+                // Add breakdown for predictions
+                const predictionBreakdown = `
+                    <p><strong>Calculation Breakdown for Predictions:</strong></p>
+                    <ul>
+                        <li>Schedule Period: ${data.prediction_schedule_start_date} to ${data.prediction_schedule_end_date}</li>
+                        <li>Total Weekdays in Schedule Period: ${data.predicted_total_weekdays}</li>
+                        <li>Total Predicted Boardings = Average Boardings Prediction (${data.boardings_prediction.toFixed(2)}) × Total Weekdays (${data.predicted_total_weekdays})</li>
+                        <li>Total Predicted Alightings = Average Alightings Prediction (${data.alightings_prediction.toFixed(2)}) × Total Weekdays (${data.predicted_total_weekdays})</li>
+                    </ul>
+                `;
+        
+                resultsHTML += predictionBreakdown;
+        
+                // Add historical data breakdown if available
                 if (data.historical_data) {
-                    const weekdaysExplanation = `
-                        <p><strong>Calculation Breakdown:</strong></p>
+                    const historicalBreakdown = `
+                        <p><strong>Calculation Breakdown for Historical Data:</strong></p>
                         <ul>
                             <li>Schedule Period Start Date: ${data.historical_data.schedule_period_start_date}</li>
                             <li>Schedule Period End Date: ${data.historical_data.schedule_period_end_date}</li>
@@ -164,7 +178,7 @@
                         <p><strong>Average Alightings:</strong> ${data.historical_data.average_alightings.toFixed(2)}</p>
                         <p><strong>Total Historical Boardings:</strong> ${data.historical_data.total_boardings.toFixed(2)}</p>
                         <p><strong>Total Historical Alightings:</strong> ${data.historical_data.total_alightings.toFixed(2)}</p>
-                        ${weekdaysExplanation}
+                        ${historicalBreakdown}
                     `;
                 } else {
                     resultsHTML += `<p><strong>Historical Data:</strong> No historical data available for the selected inputs.</p>`;
@@ -176,6 +190,7 @@
                 document.getElementById('results').innerHTML = `<p style="color: red;">An error occurred while fetching predictions. Please try again.</p>`;
             }
         }
+
 
     </script>
 </body>
