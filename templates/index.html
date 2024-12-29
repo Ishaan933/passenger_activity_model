@@ -52,6 +52,9 @@
             background-color: #f4f4f4;
             text-align: left;
         }
+        .breakdown {
+            margin-top: 15px;
+        }
     </style>
 </head>
 <body>
@@ -104,10 +107,12 @@
         <div class="results-column">
             <h2>Prediction Results</h2>
             <div id="predictionResults"></div>
+            <div class="breakdown" id="predictionBreakdown"></div>
         </div>
         <div class="results-column">
             <h2>Latest Historical Data</h2>
             <div id="historicalResults"></div>
+            <div class="breakdown" id="historicalBreakdown"></div>
         </div>
     </div>
 
@@ -185,6 +190,18 @@
                 `;
                 document.getElementById('predictionResults').innerHTML = predictionResults;
 
+                // Populate Prediction Breakdown
+                const predictionBreakdown = `
+                    <h3>Calculation Breakdown for Predictions:</h3>
+                    <ul>
+                        <li>Schedule Period: ${data.prediction_schedule_start_date} to ${data.prediction_schedule_end_date}</li>
+                        <li>Total Weekdays in Schedule Period: ${data.predicted_total_weekdays}</li>
+                        <li>Total Predicted Boardings = Average Boardings Prediction (${data.boardings_prediction.toFixed(2)}) × Total Weekdays (${data.predicted_total_weekdays})</li>
+                        <li>Total Predicted Alightings = Average Alightings Prediction (${data.alightings_prediction.toFixed(2)}) × Total Weekdays (${data.predicted_total_weekdays})</li>
+                    </ul>
+                `;
+                document.getElementById('predictionBreakdown').innerHTML = predictionBreakdown;
+
                 // Populate Historical Data Results
                 if (data.historical_data) {
                     const historicalResults = `
@@ -202,8 +219,22 @@
                         </table>
                     `;
                     document.getElementById('historicalResults').innerHTML = historicalResults;
+
+                    // Populate Historical Breakdown
+                    const historicalBreakdown = `
+                        <h3>Calculation Breakdown for Historical Data:</h3>
+                        <ul>
+                            <li>Schedule Period Start Date: ${data.historical_data.schedule_period_start_date}</li>
+                            <li>Schedule Period End Date: ${data.historical_data.schedule_period_end_date}</li>
+                            <li>Total Weekdays in Schedule Period: ${data.historical_data.total_weekdays}</li>
+                            <li>Total Historical Boardings = Average Boardings (${data.historical_data.average_boardings.toFixed(2)}) × Total Weekdays (${data.historical_data.total_weekdays})</li>
+                            <li>Total Historical Alightings = Average Alightings (${data.historical_data.average_alightings.toFixed(2)}) × Total Weekdays (${data.historical_data.total_weekdays})</li>
+                        </ul>
+                    `;
+                    document.getElementById('historicalBreakdown').innerHTML = historicalBreakdown;
                 } else {
                     document.getElementById('historicalResults').innerHTML = '<p>No historical data available.</p>';
+                    document.getElementById('historicalBreakdown').innerHTML = '';
                 }
             } catch (error) {
                 console.error('Error fetching predictions:', error);
